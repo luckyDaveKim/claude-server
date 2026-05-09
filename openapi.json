@@ -1,0 +1,587 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Claude Server API",
+    "description": "Claude Agent SDK based HTTP API server. Provides chat, session management, and OpenAI-compatible endpoints.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9001",
+      "description": "Local development"
+    }
+  ],
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "operationId": "getHealth",
+        "tags": ["System"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "enum": ["ok"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "summary": "Server status",
+        "operationId": "getStatus",
+        "tags": ["System"],
+        "responses": {
+          "200": {
+            "description": "Server status details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StatusResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat": {
+      "post": {
+        "summary": "Send chat message",
+        "description": "Main chat endpoint. Supports 3 modes: SSE streaming (default), synchronous JSON, and async fire-and-forget.",
+        "operationId": "postChat",
+        "tags": ["Chat"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChatRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synchronous JSON response (stream=false) or SSE stream (stream=true)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatResponse" }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "SSE events: system, text_delta, tool_use, tool_result, result, error, done"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Async mode — request accepted, processing in background",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions": {
+      "get": {
+        "summary": "List all sessions",
+        "operationId": "listSessions",
+        "tags": ["Sessions"],
+        "responses": {
+          "200": {
+            "description": "List of sessions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessions": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/SessionSummary" }
+                    },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}": {
+      "get": {
+        "summary": "Get session details",
+        "operationId": "getSession",
+        "tags": ["Sessions"],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SessionDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Session not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete session",
+        "operationId": "deleteSession",
+        "tags": ["Sessions"],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Session deleted" },
+          "404": {
+            "description": "Session not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models": {
+      "get": {
+        "summary": "List available models",
+        "operationId": "listModels",
+        "tags": ["OpenAI Compatible"],
+        "responses": {
+          "200": {
+            "description": "Model list (OpenAI format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": { "type": "string", "enum": ["list"] },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "object": { "type": "string", "enum": ["model"] },
+                          "created": { "type": "integer" },
+                          "owned_by": { "type": "string", "enum": ["anthropic"] }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/chat/completions": {
+      "post": {
+        "summary": "Chat completions (OpenAI-compatible)",
+        "description": "OpenAI-compatible chat completions endpoint with Claude Server extensions.",
+        "operationId": "createChatCompletion",
+        "tags": ["OpenAI Compatible"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/OpenAIChatRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chat completion response or SSE stream",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OpenAIChatResponse" }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "OpenAI-compatible SSE stream with data: {chunk} format"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/responses": {
+      "post": {
+        "summary": "Responses (LangChain/n8n Agent format)",
+        "description": "Alternative endpoint for LangChain and n8n Agent integrations.",
+        "operationId": "createResponse",
+        "tags": ["OpenAI Compatible"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ResponsesRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response in LangChain/n8n format",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ResponsesResponse" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Server AUTH_TOKEN"
+      }
+    },
+    "schemas": {
+      "ChatRequest": {
+        "type": "object",
+        "required": ["prompt"],
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 102400,
+            "description": "User prompt"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Existing session ID to resume"
+          },
+          "systemPrompt": {
+            "type": "string",
+            "description": "Custom system prompt"
+          },
+          "systemPromptMode": {
+            "type": "string",
+            "enum": ["append", "replace"],
+            "default": "append",
+            "description": "How to combine client system prompt with server base"
+          },
+          "stream": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable SSE streaming (default: true)"
+          },
+          "async": {
+            "type": "boolean",
+            "default": false,
+            "description": "Fire-and-forget mode (returns 202 immediately)"
+          },
+          "allowedTools": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Fine-grained tool allow-list (overrides defaults)"
+          },
+          "disabledTools": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Additional tools to disable"
+          },
+          "maxTurns": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Max agentic turns"
+          },
+          "model": {
+            "type": "string",
+            "enum": ["sonnet", "opus"],
+            "description": "Model selection"
+          },
+          "agents": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/components/schemas/AgentDefinition" },
+            "description": "Dynamic subagent definitions"
+          },
+          "outputFormat": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["json_schema"] },
+              "schema": { "type": "object" }
+            },
+            "description": "Structured JSON output format"
+          },
+          "effort": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "max"],
+            "description": "Thinking effort level"
+          }
+        }
+      },
+      "AgentDefinition": {
+        "type": "object",
+        "required": ["description", "prompt"],
+        "properties": {
+          "description": { "type": "string" },
+          "prompt": { "type": "string" },
+          "tools": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "disallowedTools": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "model": {
+            "type": "string",
+            "enum": ["sonnet", "opus", "haiku", "inherit"]
+          },
+          "maxTurns": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "ChatResponse": {
+        "type": "object",
+        "properties": {
+          "requestId": { "type": "string" },
+          "sessionId": { "type": "string" },
+          "content": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["success", "error", "timeout", "started"]
+          },
+          "processingTimeMs": { "type": "number" },
+          "errorMessage": { "type": "string" }
+        }
+      },
+      "StatusResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["running", "stopping", "stopped"] },
+          "uptimeSeconds": { "type": "number" },
+          "activeSessions": { "type": "integer" },
+          "totalRequests": { "type": "integer" },
+          "version": { "type": "string" }
+        }
+      },
+      "SessionSummary": {
+        "type": "object",
+        "properties": {
+          "session_id": { "type": "string" },
+          "status": { "type": "string" },
+          "first_prompt": { "type": "string" },
+          "last_activity_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "SessionDetail": {
+        "type": "object",
+        "properties": {
+          "session_id": { "type": "string" },
+          "cwd": { "type": "string" },
+          "first_prompt": { "type": "string" },
+          "status": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "last_activity_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "OpenAIChatRequest": {
+        "type": "object",
+        "required": ["messages"],
+        "properties": {
+          "model": { "type": "string" },
+          "messages": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["role", "content"],
+              "properties": {
+                "role": { "type": "string", "enum": ["system", "user", "assistant"] },
+                "content": { "type": "string" }
+              }
+            }
+          },
+          "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+          "max_tokens": { "type": "integer", "minimum": 1 },
+          "stream": { "type": "boolean", "default": false },
+          "sessionId": { "type": "string", "description": "Non-standard: session ID" },
+          "systemPrompt": { "type": "string", "description": "Non-standard: system prompt" },
+          "systemPromptMode": { "type": "string", "enum": ["append", "replace"] },
+          "allowedTools": { "type": "array", "items": { "type": "string" } },
+          "disabledTools": { "type": "array", "items": { "type": "string" } },
+          "maxTurns": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "OpenAIChatResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "object": { "type": "string", "enum": ["chat.completion"] },
+          "created": { "type": "integer" },
+          "model": { "type": "string" },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": { "type": "integer" },
+                "message": {
+                  "type": "object",
+                  "properties": {
+                    "role": { "type": "string" },
+                    "content": { "type": "string" }
+                  }
+                },
+                "finish_reason": { "type": "string", "enum": ["stop", "length", "error"] }
+              }
+            }
+          },
+          "usage": {
+            "type": "object",
+            "properties": {
+              "prompt_tokens": { "type": "integer" },
+              "completion_tokens": { "type": "integer" },
+              "total_tokens": { "type": "integer" }
+            }
+          },
+          "sessionId": { "type": "string", "description": "Non-standard: session ID" }
+        }
+      },
+      "ResponsesRequest": {
+        "type": "object",
+        "required": ["input"],
+        "properties": {
+          "input": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string" },
+                "role": { "type": "string" },
+                "content": { "type": "string" }
+              }
+            }
+          },
+          "model": { "type": "string" },
+          "stream": { "type": "boolean" },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "sessionId": { "type": "string" },
+              "async": { "type": "boolean", "default": false },
+              "systemPrompt": { "type": "string" },
+              "systemPromptMode": { "type": "string", "enum": ["append", "replace"] },
+              "allowedTools": { "type": "array", "items": { "type": "string" } },
+              "disabledTools": { "type": "array", "items": { "type": "string" } },
+              "maxTurns": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      },
+      "ResponsesResponse": {
+        "type": "object",
+        "properties": {
+          "generations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": { "type": "string" },
+                "message": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string" },
+                    "role": { "type": "string" },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": { "type": "string" },
+                          "text": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "output": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string" },
+                "role": { "type": "string" },
+                "content": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": { "type": "string" },
+                      "text": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  }
+}

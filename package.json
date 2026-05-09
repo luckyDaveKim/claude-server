@@ -1,0 +1,38 @@
+{
+  "name": "claude-server",
+  "version": "1.0.0",
+  "description": "Claude Agent SDK based HTTP API server",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "lint": "eslint src tests",
+    "lint:fix": "eslint src tests --fix"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.98",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^13.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.2",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/uuid": "^11.0.0",
+    "eslint": "^10.0.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^4.0.18"
+  }
+}
