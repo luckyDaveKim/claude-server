@@ -7,8 +7,10 @@ services:
       - "${PORT:-9001}:9001"
     env_file:
       - .env
+    environment:
+      WORKSPACE_DIR: /home1/irteam/workspace
     volumes:
-      - claude-workspace:/tmp/claude-server-workspace
+      - claude-workspace:/home1/irteam/workspace
     restart: unless-stopped
 
 volumes:
