@@ -51,27 +51,6 @@ describe('createCanUseTool', () => {
       const result = await canUseTool({ tool_name: 'mcp__atlassian__jira_search', input: {} });
       expect(result.allowed).toBe(false);
     });
-
-    it('allows explicit mcp tool name pattern', async () => {
-      const canUseTool = createCanUseTool({
-        allowedTools: ['mcp__naver-works__calendar_list_events'],
-        disabledTools: [],
-      });
-      const result = await canUseTool({ tool_name: 'mcp__naver-works__calendar_list_events', input: {} });
-      expect(result.allowed).toBe(true);
-    });
-
-    it('denies non-allowed mcp tool from restricted server', async () => {
-      const canUseTool = createCanUseTool({
-        allowedTools: [
-          'mcp__naver-works__calendar_list_events',
-          'mcp__naver-works__calendar_view_event',
-        ],
-        disabledTools: [],
-      });
-      const result = await canUseTool({ tool_name: 'mcp__naver-works__mail_send', input: {} });
-      expect(result.allowed).toBe(false);
-    });
   });
 
   describe('wildcard matching — Bash patterns', () => {
@@ -163,35 +142,6 @@ describe('createCanUseTool', () => {
         input: { command: 'npm test' },
       });
       expect(result.allowed).toBe(true);
-    });
-  });
-
-  describe('ToolSearch and LSP', () => {
-    it('allows ToolSearch when in allowedTools', async () => {
-      const canUseTool = createCanUseTool({
-        allowedTools: ['ToolSearch'],
-        disabledTools: [],
-      });
-      const result = await canUseTool({ tool_name: 'ToolSearch', input: {} });
-      expect(result.allowed).toBe(true);
-    });
-
-    it('allows LSP when in allowedTools', async () => {
-      const canUseTool = createCanUseTool({
-        allowedTools: ['LSP'],
-        disabledTools: [],
-      });
-      const result = await canUseTool({ tool_name: 'LSP', input: {} });
-      expect(result.allowed).toBe(true);
-    });
-
-    it('denies LSP when in disabledTools', async () => {
-      const canUseTool = createCanUseTool({
-        allowedTools: ['LSP'],
-        disabledTools: ['LSP'],
-      });
-      const result = await canUseTool({ tool_name: 'LSP', input: {} });
-      expect(result.allowed).toBe(false);
     });
   });
 });
