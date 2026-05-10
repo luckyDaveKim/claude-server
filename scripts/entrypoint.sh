@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
 
-cd /home1/irteam/app
+cd /home/node/app
 exec node dist/index.js

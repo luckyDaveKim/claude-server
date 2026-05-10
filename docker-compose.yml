@@ -8,9 +8,9 @@ services:
     env_file:
       - .env
     environment:
-      WORKSPACE_DIR: /home1/irteam/workspace
+      WORKSPACE_DIR: /home/node/workspace
     volumes:
-      - claude-workspace:/home1/irteam/workspace
+      - claude-workspace:/home/node/workspace
     restart: unless-stopped
 
 volumes:

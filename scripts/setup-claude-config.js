@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const home = process.env.HOME || '/home1/irteam';
+const home = process.env.HOME || '/home/node';
 
 // Write to both possible config locations
 const configPaths = [
