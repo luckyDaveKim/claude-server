@@ -1,0 +1,15 @@
+services:
+  claude-server:
+    build: .
+    image: claude-server:latest
+    container_name: claude-server
+    ports:
+      - "${PORT:-9001}:9001"
+    env_file:
+      - .env
+    volumes:
+      - claude-workspace:/tmp/claude-server-workspace
+    restart: unless-stopped
+
+volumes:
+  claude-workspace:

@@ -101,3 +101,16 @@ npx vitest run tests/tools/        # tools 디렉토리만
 podman build -t claude-server:latest .
 podman run -d --name claude-server --env-file .env -p 9001:9001 claude-server:latest
 ```
+
+## Docker Compose
+
+`.env` 파일을 준비한 뒤 실행한다.
+
+```bash
+cp .env.example .env       # AUTH_TOKEN, CLAUDE_CODE_OAUTH_TOKEN 채우기
+docker compose up -d       # 빌드 + 백그라운드 실행
+docker compose logs -f     # 로그 확인
+docker compose down        # 종료 (볼륨 유지)
+```
+
+세션 데이터는 `claude-workspace` named volume에 저장된다. 포트는 `.env`의 `PORT`로 변경 가능 (기본 9001).

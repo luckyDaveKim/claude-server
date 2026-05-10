@@ -7,3 +7,5 @@ dist
 tests
 docs
 vitest.config.ts
+docker-compose.yml
+docker-compose.*.yml
