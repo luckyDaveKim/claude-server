@@ -5,7 +5,7 @@
 
 export const DEFAULT_ALLOWED_TOOLS: readonly string[] = [
   'Read', 'Glob', 'Grep',
-  'Edit', 'Write', 'MultiEdit', 'NotebookEdit', 'Task',
+  'Edit', 'Write', 'NotebookEdit', 'Task',
   'Skill',
   'ToolSearch',
   'Bash(git add:*)', 'Bash(git commit:*)', 'Bash(git push:*)',

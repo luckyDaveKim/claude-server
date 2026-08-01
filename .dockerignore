@@ -7,5 +7,6 @@ dist
 tests
 docs
 vitest.config.ts
+eslint.config.js
 docker-compose.yml
 docker-compose.*.yml

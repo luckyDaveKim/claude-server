@@ -34,14 +34,9 @@ RUN node /tmp/setup-claude-config.js && rm /tmp/setup-claude-config.js
 
 COPY --chown=node:node . .
 
-COPY --chown=node:node scripts/entrypoint.sh /home/node/app/scripts/entrypoint.sh
-RUN chmod +x /home/node/app/scripts/entrypoint.sh
-
 RUN npm run build
 RUN npm prune --production
 
 EXPOSE 9001
 
-WORKDIR /home/node
-
-CMD ["bash", "/home/node/app/scripts/entrypoint.sh"]
+CMD ["node", "dist/index.js"]

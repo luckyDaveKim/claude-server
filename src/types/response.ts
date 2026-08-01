@@ -9,15 +9,6 @@ export interface ChatResponse {
   errorMessage?: string;
 }
 
-export interface CodeTaskResponse {
-  requestId: string;
-  sessionId: string;
-  status: ResponseStatus;
-  processingTimeMs: number;
-  output: string;
-  errorMessage?: string;
-}
-
 export type ServerStatusState = 'running' | 'stopping' | 'stopped';
 
 export interface ServerStatus {

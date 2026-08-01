@@ -194,10 +194,6 @@ async function chatHandler(req: Request, res: Response): Promise<void> {
           writeSSE(res, 'tool_use', { name: event.name, input: event.input });
           break;
 
-        case 'tool_result':
-          writeSSE(res, 'tool_result', { content: event.content });
-          break;
-
         case 'result':
           writeSSE(res, 'result', {
             requestId,

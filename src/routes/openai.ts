@@ -303,7 +303,7 @@ router.post(
             };
             res.write(`data: ${JSON.stringify(chunk)}\n\n`);
           }
-          // Other event types (tool_use, tool_result, system) are
+          // Other event types (tool_use, system) are
           // internal to the agent loop and are not surfaced in the
           // OpenAI streaming format.
         }

@@ -7,26 +7,17 @@ const router = Router();
 
 const startTime = Date.now();
 
-export function getStats() {
-  return {
-    uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
-    activeSessions: sessionManager.getActiveSessionCount(),
-    totalRequests: getRequestCount(),
-  };
-}
-
 router.get('/health', (_req, res) => {
   const response: HealthResponse = { status: 'ok' };
   res.json(response);
 });
 
 router.get('/status', (_req, res) => {
-  const stats = getStats();
   const response: ServerStatus = {
     status: 'running',
-    uptimeSeconds: stats.uptimeSeconds,
-    activeSessions: stats.activeSessions,
-    totalRequests: stats.totalRequests,
+    uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
+    activeSessions: sessionManager.getActiveSessionCount(),
+    totalRequests: getRequestCount(),
     version: '1.0.0',
   };
   res.json(response);

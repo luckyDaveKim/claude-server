@@ -79,7 +79,7 @@
               "text/event-stream": {
                 "schema": {
                   "type": "string",
-                  "description": "SSE events: system, text_delta, tool_use, tool_result, result, error, done"
+                  "description": "SSE events: system, text_delta, tool_use, result, error, done"
                 }
               }
             }

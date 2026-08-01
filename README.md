@@ -36,7 +36,8 @@ src/
 │   └── allowed-tools.ts    # 기본 허용/차단 도구 목록
 ├── types/                  # TypeScript 타입 정의
 ├── middleware/             # auth, error-handler, request-logger
-└── utils/                  # logger, sanitizer 등
+└── utils/
+    └── logger.ts           # JSON 구조화 로거
 
 prompts/
 └── server-base.md          # 서버 기본 시스템 프롬프트
@@ -50,6 +51,7 @@ npm run build       # TypeScript 컴파일
 npm run dev         # 개발 모드 (tsx watch)
 npm start           # 프로덕션 실행
 npm test            # 테스트 실행 (vitest)
+npm run lint        # eslint 검사 (lint:fix 로 자동 수정)
 ```
 
 ## 환경변수

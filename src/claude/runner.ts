@@ -85,7 +85,6 @@ export type SSEEvent =
   | { type: 'system'; sessionId: string }
   | { type: 'text_delta'; text: string }
   | { type: 'tool_use'; name: string; input: unknown }
-  | { type: 'tool_result'; content: string }
   | { type: 'result'; content: string; sessionId: string; status: 'success' | 'error' | 'timeout'; processingTimeMs: number }
   | { type: 'error'; message: string; sessionId: string; status: 'error' | 'timeout'; processingTimeMs: number };
 

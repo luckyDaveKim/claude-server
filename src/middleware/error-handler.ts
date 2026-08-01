@@ -31,18 +31,6 @@ export class NotFoundError extends AppError {
   }
 }
 
-export class TimeoutError extends AppError {
-  constructor(message: string = 'Request timeout') {
-    super(408, 'timeout', message);
-  }
-}
-
-export class TooManyRequestsError extends AppError {
-  constructor(message: string = 'Too many requests') {
-    super(429, 'too_many_requests', message);
-  }
-}
-
 export function errorHandler(
   err: Error,
   _req: Request,
